@@ -19,4 +19,7 @@ dependencies {
     api rootProject.ext.dependencies.anyPermission
     api rootProject.ext.dependencies.swipeBack
     api rootProject.ext.dependencies.lazyfragment
+
+    debugImplementation 'com.readystatesoftware.chuck:library:1.1.0'
+    releaseImplementation 'com.readystatesoftware.chuck:library-no-op:1.1.0'
 }
