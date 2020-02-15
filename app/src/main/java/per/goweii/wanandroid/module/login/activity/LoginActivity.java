@@ -9,7 +9,8 @@ import android.content.Intent;
 import android.support.annotation.Nullable;
 import android.support.v4.view.ViewPager;
 import android.view.View;
-import android.view.WindowManager;
+import android.view.animation.AccelerateDecelerateInterpolator;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 
@@ -19,6 +20,7 @@ import butterknife.BindView;
 import per.goweii.basic.core.adapter.FixedFragmentPagerAdapter;
 import per.goweii.basic.core.base.BaseActivity;
 import per.goweii.basic.utils.LogUtils;
+import per.goweii.basic.utils.SoftInputHelper;
 import per.goweii.swipeback.SwipeBackDirection;
 import per.goweii.wanandroid.R;
 import per.goweii.wanandroid.module.login.fragment.LoginFragment;
@@ -42,10 +44,13 @@ public class LoginActivity extends BaseActivity {
     ImageView iv_circle_2;
     @BindView(R.id.vp)
     ViewPager vp;
+    @BindView(R.id.fl_eye)
+    FrameLayout fl_eye;
 
     private boolean isRunning = false;
     private AnimatorSet mSet1;
     private AnimatorSet mSet2;
+    private SoftInputHelper mSoftInputHelper;
 
     public static void start(Context context) {
         Intent intent = new Intent(context, LoginActivity.class);
@@ -76,7 +81,7 @@ public class LoginActivity extends BaseActivity {
 
     @Override
     protected void initView() {
-        getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_NOTHING);
+        mSoftInputHelper = SoftInputHelper.attach(this).moveBy(rl_input);
         FixedFragmentPagerAdapter adapter = new FixedFragmentPagerAdapter(getSupportFragmentManager());
         vp.setAdapter(adapter);
         adapter.setFragmentList(LoginFragment.create(), RegisterFragment.create());
@@ -113,8 +118,8 @@ public class LoginActivity extends BaseActivity {
                 R.anim.swipeback_activity_close_bottom_out);
     }
 
-    public RelativeLayout getRl_input() {
-        return rl_input;
+    public SoftInputHelper getSoftInputHelper() {
+        return mSoftInputHelper;
     }
 
     public void changeToRegister() {
@@ -138,6 +143,17 @@ public class LoginActivity extends BaseActivity {
             mSet2.cancel();
             mSet2 = null;
         }
+    }
+
+    public void doEyeAnim(boolean close) {
+        int h = fl_eye.getHeight();
+        if (h <= 0) {
+            return;
+        }
+        float endY = close ? h : 0;
+        ObjectAnimator anim = ObjectAnimator.ofFloat(fl_eye, "translationY", fl_eye.getTranslationY(), endY);
+        anim.setInterpolator(new AccelerateDecelerateInterpolator());
+        anim.start();
     }
 
     private AnimatorSet startCircleAnim(View target) {

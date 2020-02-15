@@ -10,15 +10,21 @@ import com.franmontiel.persistentcookiejar.PersistentCookieJar;
 import com.franmontiel.persistentcookiejar.cache.SetCookieCache;
 import com.franmontiel.persistentcookiejar.persistence.SharedPrefsCookiePersistor;
 import com.tencent.bugly.crashreport.CrashReport;
+import com.tencent.smtt.sdk.QbSdk;
+
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import cat.ereza.customactivityoncrash.config.CaocConfig;
 import io.realm.Realm;
 import per.goweii.basic.core.CoreInit;
 import per.goweii.basic.core.base.BaseApp;
 import per.goweii.basic.utils.DebugUtils;
+import per.goweii.basic.utils.LogUtils;
 import per.goweii.basic.utils.listener.SimpleCallback;
 import per.goweii.burred.Blurred;
 import per.goweii.rxhttp.core.RxHttp;
+import per.goweii.wanandroid.BuildConfig;
 import per.goweii.wanandroid.http.RxHttpRequestSetting;
 import per.goweii.wanandroid.http.WanCache;
 import per.goweii.wanandroid.module.main.activity.CrashActivity;
@@ -38,17 +44,11 @@ public class WanApp extends BaseApp {
 
     private static PersistentCookieJar mCookieJar = null;
 
-    private static boolean mWebActivityStarted = false;
-
-    public static boolean isWebActivityStarted() {
-        return mWebActivityStarted;
-    }
-
     @Override
     public void onCreate() {
         super.onCreate();
         if (isMainProcess()) {
-            setDarkModeStatus();
+            initDarkMode();
             RxHttp.init(this);
             RxHttp.initRequest(new RxHttpRequestSetting(getCookieJar()));
             WanCache.init();
@@ -61,16 +61,49 @@ public class WanApp extends BaseApp {
             });
             Realm.init(this);
         }
+        initX5();
         initBugly();
         initCrashActivity();
+    }
+
+    private void initX5() {
+        QbSdk.initX5Environment(this, new QbSdk.PreInitCallback() {
+            @Override
+            public void onCoreInitFinished() {
+                LogUtils.d("x5", "initX5Environment->onCoreInitFinished");
+            }
+
+            @Override
+            public void onViewInitFinished(boolean b) {
+                LogUtils.d("x5", "initX5Environment->onViewInitFinished=" + b);
+            }
+        });
     }
 
     private void initBugly() {
         if (!DebugUtils.isDebug()) {
             CrashReport.setIsDevelopmentDevice(this, DebugUtils.isDebug());
             CrashReport.UserStrategy strategy = new CrashReport.UserStrategy(this);
+            strategy.setCrashHandleCallback(new CrashReport.CrashHandleCallback() {
+                @Override
+                public Map<String, String> onCrashHandleStart(int crashType, String errorType, String errorMessage, String errorStack) {
+                    LinkedHashMap<String, String> map = new LinkedHashMap<>();
+                    String x5CrashInfo = com.tencent.smtt.sdk.WebView.getCrashExtraMessage(getAppContext());
+                    map.put("x5crashInfo", x5CrashInfo);
+                    return map;
+                }
+
+                @Override
+                public byte[] onCrashHandleStart2GetExtraDatas(int crashType, String errorType, String errorMessage, String errorStack) {
+                    try {
+                        return "Extra data.".getBytes("UTF-8");
+                    } catch (Exception e) {
+                        return null;
+                    }
+                }
+            });
             strategy.setUploadProcess(isMainProcess());
-            CrashReport.initCrashReport(this, "0411151084", DebugUtils.isDebug(), strategy);
+            CrashReport.initCrashReport(this, BuildConfig.APPID_BUGLY, DebugUtils.isDebug(), strategy);
         }
     }
 
@@ -88,6 +121,8 @@ public class WanApp extends BaseApp {
                 .apply();
     }
 
+    private static boolean mWebActivityStarted = false;
+
     @Override
     public void onActivityCreated(Activity activity, Bundle savedInstanceState) {
         super.onActivityCreated(activity, savedInstanceState);
@@ -96,6 +131,7 @@ public class WanApp extends BaseApp {
                 Intent intent = new Intent(activity, WebActivity.class);
                 intent.putExtra("destroyOnCreated", true);
                 activity.startActivity(intent);
+                activity.overridePendingTransition(0, 0);
             }
         }
     }
@@ -107,22 +143,18 @@ public class WanApp extends BaseApp {
             boolean destroyOnCreated = activity.getIntent().getBooleanExtra("destroyOnCreated", false);
             if (destroyOnCreated) {
                 activity.finish();
+                activity.overridePendingTransition(0, 0);
             }
             mWebActivityStarted = true;
         }
     }
 
-    @Override
-    public void onActivityStopped(Activity activity) {
-        super.onActivityStopped(activity);
-    }
-
-    public static boolean getDarkModeStatus() {
+    public static boolean isDarkMode() {
         int mode = getAppContext().getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK;
         return mode == Configuration.UI_MODE_NIGHT_YES;
     }
 
-    public static void setDarkModeStatus() {
+    public static void initDarkMode() {
         if (SettingUtils.getInstance().isDarkTheme()) {
             AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
         } else {

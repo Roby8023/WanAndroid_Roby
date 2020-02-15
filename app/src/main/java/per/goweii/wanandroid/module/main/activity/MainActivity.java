@@ -1,13 +1,9 @@
 package per.goweii.wanandroid.module.main.activity;
 
 import android.Manifest;
-import android.content.ClipData;
-import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
-import android.net.Uri;
 import android.support.annotation.Nullable;
 import android.support.v4.view.ViewPager;
 import android.text.TextUtils;
@@ -19,18 +15,19 @@ import per.goweii.basic.core.adapter.FixedFragmentPagerAdapter;
 import per.goweii.basic.core.base.BaseActivity;
 import per.goweii.basic.core.permission.PermissionUtils;
 import per.goweii.basic.ui.dialog.UpdateDialog;
-import per.goweii.basic.utils.LogUtils;
-import per.goweii.basic.utils.SPUtils;
-import per.goweii.basic.utils.listener.SimpleListener;
 import per.goweii.wanandroid.R;
 import per.goweii.wanandroid.module.main.dialog.CopiedLinkDialog;
 import per.goweii.wanandroid.module.main.dialog.DownloadDialog;
+import per.goweii.wanandroid.module.main.dialog.PasswordDialog;
+import per.goweii.wanandroid.module.main.dialog.PrivacyPolicyDialog;
 import per.goweii.wanandroid.module.main.fragment.MainFragment;
 import per.goweii.wanandroid.module.main.fragment.UserArticleFragment;
 import per.goweii.wanandroid.module.main.model.UpdateBean;
 import per.goweii.wanandroid.module.main.presenter.MainPresenter;
 import per.goweii.wanandroid.module.main.view.MainView;
+import per.goweii.wanandroid.utils.CopiedTextProcessor;
 import per.goweii.wanandroid.utils.UpdateUtils;
+import per.goweii.wanandroid.utils.wanpwd.WanPwdParser;
 
 public class MainActivity extends BaseActivity<MainPresenter> implements MainView, ViewPager.OnPageChangeListener {
 
@@ -42,8 +39,8 @@ public class MainActivity extends BaseActivity<MainPresenter> implements MainVie
     private FixedFragmentPagerAdapter mPagerAdapter;
     private RuntimeRequester mRuntimeRequester;
     private UpdateUtils mUpdateUtils;
-    private String mLastCopyLink = "";
     private CopiedLinkDialog mCopiedLinkDialog = null;
+    private PasswordDialog mPasswordDialog = null;
 
     public static void start(Context context) {
         Intent intent = new Intent(context, MainActivity.class);
@@ -59,7 +56,7 @@ public class MainActivity extends BaseActivity<MainPresenter> implements MainVie
     protected void initWindow() {
         super.initWindow();
         setTheme(R.style.AppTheme);
-        getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        getWindow().setBackgroundDrawable(new ColorDrawable(getResources().getColor(R.color.background)));
     }
 
     @Override
@@ -85,7 +82,18 @@ public class MainActivity extends BaseActivity<MainPresenter> implements MainVie
         );
         vp.setCurrentItem(1);
         onPageSelected(vp.getCurrentItem());
-        mLastCopyLink = SPUtils.getInstance().get("LastCopyLink", "");
+        PrivacyPolicyDialog.showIfFirst(getContext());
+        CopiedTextProcessor.getInstance().setProcessCallback(new CopiedTextProcessor.ProcessCallback() {
+            @Override
+            public void isLink(String link) {
+                showLinkDialog(link);
+            }
+
+            @Override
+            public void isPassword(WanPwdParser pwd) {
+                showPasswordDialog(pwd);
+            }
+        });
     }
 
     @Override
@@ -99,7 +107,7 @@ public class MainActivity extends BaseActivity<MainPresenter> implements MainVie
         vp.postDelayed(new Runnable() {
             @Override
             public void run() {
-                isNeedOpenLink();
+                CopiedTextProcessor.getInstance().process();
             }
         }, 500L);
     }
@@ -109,39 +117,45 @@ public class MainActivity extends BaseActivity<MainPresenter> implements MainVie
         super.onStop();
     }
 
-    private void isNeedOpenLink() {
-        ClipboardManager clipboardManager = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
-        ClipData clip = clipboardManager.getPrimaryClip();
-        if (clip == null || clip.getItemCount() <= 0) {
-            return;
-        }
-        for (int i = 0; i < clip.getItemCount(); i++) {
-            ClipData.Item item = clip.getItemAt(i);
-            LogUtils.i("WanApp", "" + item.toString());
-        }
-        ClipData.Item item = clip.getItemAt(0);
-        if (TextUtils.isEmpty(item.getText())) {
-            return;
-        }
-        String text = item.getText().toString();
-        if (TextUtils.equals(mLastCopyLink, text)) {
-            return;
-        }
-        Uri uri = Uri.parse(text);
-        if (!TextUtils.equals(uri.getScheme(), "http") && !TextUtils.equals(uri.getScheme(), "https")) {
-            return;
+    private void showLinkDialog(String link) {
+        if (mCopiedLinkDialog != null) {
+            if (mCopiedLinkDialog.isShow()) {
+                if (!TextUtils.equals(mCopiedLinkDialog.getLink(), link)) {
+                    mCopiedLinkDialog.dismiss();
+                    mCopiedLinkDialog = null;
+                }
+            } else {
+                if (!TextUtils.equals(mCopiedLinkDialog.getLink(), link)) {
+                    mCopiedLinkDialog = null;
+                } else {
+                    mCopiedLinkDialog.show();
+                }
+            }
         }
         if (mCopiedLinkDialog == null) {
-            mCopiedLinkDialog = new CopiedLinkDialog(vp, text, new SimpleListener() {
-                @Override
-                public void onResult() {
-                    mLastCopyLink = text;
-                    SPUtils.getInstance().save("LastCopyLink", mLastCopyLink);
-                }
-            });
-        }
-        if (!mCopiedLinkDialog.isShow()) {
+            mCopiedLinkDialog = new CopiedLinkDialog(vp, link);
             mCopiedLinkDialog.show();
+        }
+    }
+
+    private void showPasswordDialog(WanPwdParser parser) {
+        if (mPasswordDialog != null) {
+            if (mPasswordDialog.isShow()) {
+                if (!parser.equals(mPasswordDialog.getPassword())) {
+                    mPasswordDialog.dismiss();
+                    mPasswordDialog = null;
+                }
+            } else {
+                if (!parser.equals(mPasswordDialog.getPassword())) {
+                    mPasswordDialog = null;
+                } else {
+                    mPasswordDialog.show();
+                }
+            }
+        }
+        if (mPasswordDialog == null) {
+            mPasswordDialog = new PasswordDialog(getContext(), parser);
+            mPasswordDialog.show();
         }
     }
 
@@ -194,6 +208,15 @@ public class MainActivity extends BaseActivity<MainPresenter> implements MainVie
         super.onActivityResult(requestCode, resultCode, data);
         if (mRuntimeRequester != null) {
             mRuntimeRequester.onActivityResult(requestCode);
+        }
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (vp.getCurrentItem() == 1) {
+            super.onBackPressed();
+        } else {
+            vp.setCurrentItem(1);
         }
     }
 
