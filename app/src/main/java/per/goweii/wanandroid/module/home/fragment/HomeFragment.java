@@ -42,7 +42,6 @@ import per.goweii.basic.utils.listener.SimpleCallback;
 import per.goweii.basic.utils.listener.SimpleListener;
 import per.goweii.wanandroid.R;
 import per.goweii.wanandroid.common.ScrollTop;
-import per.goweii.wanandroid.common.WanApp;
 import per.goweii.wanandroid.event.CollectionEvent;
 import per.goweii.wanandroid.event.LoginEvent;
 import per.goweii.wanandroid.event.SettingChangeEvent;
@@ -293,9 +292,6 @@ public class HomeFragment extends BaseFragment<HomePresenter> implements ScrollT
     }
 
     private void showWebDialog(boolean header, int position) {
-        if (!WanApp.isWebActivityStarted()) {
-//            return;
-        }
         int index = position;
         if (!header) {
             if (mHeaderTopItemBeans != null) {
@@ -548,12 +544,10 @@ public class HomeFragment extends BaseFragment<HomePresenter> implements ScrollT
     public void getConfigSuccess(ConfigBean configBean) {
         if (configBean.getHomeTitle() != null) {
             if (mConfigBean == null || !TextUtils.equals(mConfigBean.getHomeTitle(), configBean.getHomeTitle())) {
-                if (configBean.getHomeTitle() == null) {
-                    abc.getTitleTextView().setText("首页");
-                } else {
-                    abc.getTitleTextView().setText(configBean.getHomeTitle());
-                }
+                abc.getTitleTextView().setText(configBean.getHomeTitle());
             }
+        } else {
+            abc.getTitleTextView().setText("首页");
         }
         if (TextUtils.isEmpty(configBean.getActionBarBgImageUrl())) {
             if (TextUtils.isEmpty(configBean.getActionBarBgColor())) {
@@ -564,24 +558,24 @@ public class HomeFragment extends BaseFragment<HomePresenter> implements ScrollT
                         int color = Color.parseColor(configBean.getActionBarBgColor());
                         abc.setBackgroundColor(color);
                     } catch (IllegalArgumentException e) {
-                        e.printStackTrace();
+                        abc.setBackgroundResource(R.color.basic_ui_action_bar_bg);
                     }
                 }
             }
         } else {
-            if (TextUtils.isEmpty(configBean.getActionBarBgColor())) {
-                abc.setBackgroundResource(R.color.basic_ui_action_bar_bg);
-            } else {
-                if (mConfigBean == null || !TextUtils.equals(mConfigBean.getActionBarBgColor(), configBean.getActionBarBgColor())) {
-                    try {
-                        int color = Color.parseColor(configBean.getActionBarBgColor());
-                        abc.setBackgroundColor(color);
-                    } catch (IllegalArgumentException e) {
-                        e.printStackTrace();
+            if (mConfigBean == null || !TextUtils.equals(mConfigBean.getActionBarBgImageUrl(), configBean.getActionBarBgImageUrl())) {
+                if (TextUtils.isEmpty(configBean.getActionBarBgColor())) {
+                    abc.setBackgroundResource(R.color.basic_ui_action_bar_bg);
+                } else {
+                    if (mConfigBean == null || !TextUtils.equals(mConfigBean.getActionBarBgColor(), configBean.getActionBarBgColor())) {
+                        try {
+                            int color = Color.parseColor(configBean.getActionBarBgColor());
+                            abc.setBackgroundColor(color);
+                        } catch (IllegalArgumentException e) {
+                            abc.setBackgroundResource(R.color.basic_ui_action_bar_bg);
+                        }
                     }
                 }
-            }
-            if (mConfigBean == null || !TextUtils.equals(mConfigBean.getActionBarBgImageUrl(), configBean.getActionBarBgImageUrl())) {
                 GlideHelper.with(getContext())
                         .load(configBean.getActionBarBgImageUrl())
                         .get(new SimpleCallback<Bitmap>() {

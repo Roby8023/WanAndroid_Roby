@@ -26,6 +26,7 @@ public class PasswordInputView extends InputView {
     private ImageView mIcEyeIcon;
 
     private boolean isHidePwdMode = true;
+    private OnPwdFocusChangedListener mOnPwdFocusChangedListener = null;
 
     public PasswordInputView(Context context) {
         super(context);
@@ -39,10 +40,15 @@ public class PasswordInputView extends InputView {
         super(context, attrs, defStyleAttr);
     }
 
+    public void setOnPwdFocusChangedListener(OnPwdFocusChangedListener onPwdFocusChangedListener) {
+        mOnPwdFocusChangedListener = onPwdFocusChangedListener;
+    }
+
     @Override
     protected void initViews(AttributeSet attrs) {
         super.initViews(attrs);
         getEditText().setHint("请输入密码");
+        changeFocusMode(false);
         changePwdHideMode(true);
     }
 
@@ -86,7 +92,14 @@ public class PasswordInputView extends InputView {
     @Override
     public void onFocusChange(View v, boolean hasFocus) {
         super.onFocusChange(v, hasFocus);
-        if (hasFocus) {
+        changeFocusMode(hasFocus);
+        if (mOnPwdFocusChangedListener != null) {
+            mOnPwdFocusChangedListener.onFocusChanged(hasFocus);
+        }
+    }
+
+    private void changeFocusMode(boolean focus) {
+        if (focus) {
             if (isEmpty()) {
                 mIvDeleteIcon.setVisibility(INVISIBLE);
             } else {
@@ -123,5 +136,9 @@ public class PasswordInputView extends InputView {
         } else {
             mIvDeleteIcon.setVisibility(VISIBLE);
         }
+    }
+
+    public interface OnPwdFocusChangedListener {
+        void onFocusChanged(boolean focus);
     }
 }
