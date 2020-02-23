@@ -21,21 +21,34 @@ import per.goweii.wanandroid.utils.GuideSPUtils;
 /**
  * @author CuiZhen
  * @date 2019/8/31
- * QQ: 302833254
- * E-mail: goweii@163.com
  * GitHub: https://github.com/goweii
  */
 public class PrivacyPolicyDialog extends DialogLayer {
 
-    public static void showIfFirst(Context context) {
+    public static void showIfFirst(Context context, CompleteCallback callback) {
         if (GuideSPUtils.getInstance().isPrivacyPolicyShown()) {
+            if (callback != null) {
+                callback.onComplete();
+            }
             return;
         }
-        new PrivacyPolicyDialog(context).show();
+        new PrivacyPolicyDialog(context, callback).show();
     }
 
-    private PrivacyPolicyDialog(Context context) {
+    private PrivacyPolicyDialog(Context context, CompleteCallback callback) {
         super(context);
+        onDismissListener(new OnDismissListener() {
+            @Override
+            public void onDismissing(Layer layer) {
+            }
+
+            @Override
+            public void onDismissed(Layer layer) {
+                if (callback != null) {
+                    callback.onComplete();
+                }
+            }
+        });
         contentView(R.layout.dialog_privacy_policy)
                 .backgroundDimDefault()
                 .cancelableOnClickKeyBack(false)
@@ -90,5 +103,9 @@ public class PrivacyPolicyDialog extends DialogLayer {
             ds.setColor(getActivity().getResources().getColor(R.color.main));
             ds.setUnderlineText(false);
         }
+    }
+
+    public interface CompleteCallback {
+        void onComplete();
     }
 }

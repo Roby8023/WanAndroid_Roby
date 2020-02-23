@@ -23,8 +23,6 @@ import per.goweii.wanandroid.widget.SubmitView;
 /**
  * @author CuiZhen
  * @date 2019/5/16
- * QQ: 302833254
- * E-mail: goweii@163.com
  * GitHub: https://github.com/goweii
  */
 public class LoginFragment extends BaseFragment<LoginPresenter> implements LoginView {
@@ -124,6 +122,23 @@ public class LoginFragment extends BaseFragment<LoginPresenter> implements Login
     public void loginSuccess(int code, LoginBean data) {
         new LoginEvent(true).post();
         finish();
+//        AccountInfo accountInfo = new AccountInfo();
+//        accountInfo.isv_refer_id = data.getId() + "";
+//        accountInfo.nickname = data.getUsername();
+//        CyanSdk.getInstance(getContext())
+//                .setAccountInfo(accountInfo, new CallBack() {
+//                    @Override
+//                    public void success() {
+//                        new LoginEvent(true).post();
+//                        finish();
+//                    }
+//
+//                    @Override
+//                    public void error(CyanException e) {
+//                        e.printStackTrace();
+//                        ToastMaker.showShort(e.error_msg);
+//                    }
+//                });
     }
 
     @Override
