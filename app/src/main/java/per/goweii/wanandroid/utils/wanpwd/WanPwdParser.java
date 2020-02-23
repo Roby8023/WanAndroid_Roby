@@ -15,8 +15,6 @@ import per.goweii.wanandroid.BuildConfig;
 /**
  * @author CuiZhen
  * @date 2019/12/28
- * QQ: 302833254
- * E-mail: goweii@163.com
  * GitHub: https://github.com/goweii
  */
 public class WanPwdParser {
@@ -31,8 +29,10 @@ public class WanPwdParser {
         switch (mPwd.type) {
             default:
             case UNKNOWN:
-            case CDKEY:
                 mWanPwd = new UnknownWanPwd();
+                break;
+            case CDKEY:
+                mWanPwd = new CDKeyWanPwd(mPwd.content);
                 break;
             case QQ:
                 mWanPwd = new QQWanPwd(mPwd.content);
@@ -48,6 +48,9 @@ public class WanPwdParser {
                 break;
             case ABOUTME:
                 mWanPwd = new AboutMeWanPwd();
+                break;
+            case CREATE_CDKEY:
+                mWanPwd = new CreateCDKeyWanPwd(mPwd.content);
                 break;
         }
     }
@@ -139,7 +142,8 @@ public class WanPwdParser {
         USERPAGE(BuildConfig.WANPWD_TYPE_USERPAGE),
         CDKEY(BuildConfig.WANPWD_TYPE_CDKEY),
         WEB(BuildConfig.WANPWD_TYPE_WEB),
-        ABOUTME(BuildConfig.WANPWD_TYPE_ABOUTME);
+        ABOUTME(BuildConfig.WANPWD_TYPE_ABOUTME),
+        CREATE_CDKEY(BuildConfig.WANPWD_TYPE_CREATE_CDKEY);
 
         private final String type;
 

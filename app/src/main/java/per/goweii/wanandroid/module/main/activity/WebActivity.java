@@ -54,8 +54,6 @@ import per.goweii.wanandroid.widget.WebContainer;
 /**
  * @author CuiZhen
  * @date 2019/5/15
- * QQ: 302833254
- * E-mail: goweii@163.com
  * GitHub: https://github.com/goweii
  */
 public class WebActivity extends BaseActivity<WebPresenter> implements per.goweii.wanandroid.module.main.view.WebView {
@@ -170,6 +168,7 @@ public class WebActivity extends BaseActivity<WebPresenter> implements per.gowei
             mAuthor = getIntent().getStringExtra("author");
             mUrl = getIntent().getStringExtra("url");
         }
+        //ArticleActivity.Companion.startSelf(this);
         mTitle = mTitle == null ? "" : mTitle;
         mAuthor = mAuthor == null ? "" : mAuthor;
         mUrl = mUrl == null ? "" : mUrl;
