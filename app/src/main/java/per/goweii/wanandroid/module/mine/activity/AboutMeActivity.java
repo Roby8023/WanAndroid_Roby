@@ -8,7 +8,6 @@ import android.animation.ValueAnimator;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.view.View;
 import android.view.animation.DecelerateInterpolator;
@@ -16,6 +15,8 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+
+import androidx.annotation.Nullable;
 
 import com.daimajia.swipe.SwipeLayout;
 
@@ -40,11 +41,11 @@ import per.goweii.basic.utils.listener.SimpleCallback;
 import per.goweii.percentimageview.percentimageview.PercentImageView;
 import per.goweii.wanandroid.BuildConfig;
 import per.goweii.wanandroid.R;
-import per.goweii.wanandroid.module.main.activity.WebActivity;
 import per.goweii.wanandroid.module.mine.model.AboutMeBean;
 import per.goweii.wanandroid.module.mine.presenter.AboutMePresenter;
 import per.goweii.wanandroid.module.mine.view.AboutMeView;
 import per.goweii.wanandroid.utils.ImageLoader;
+import per.goweii.wanandroid.utils.UrlOpenUtils;
 
 /**
  * @author CuiZhen
@@ -147,10 +148,16 @@ public class AboutMeActivity extends BaseActivity<AboutMePresenter> implements A
             default:
                 break;
             case R.id.ll_github:
-                WebActivity.start(getContext(), tv_name.getText().toString(), tv_github.getText().toString());
+                UrlOpenUtils.Companion
+                        .with(tv_github.getText().toString())
+                        .title(tv_name.getText().toString())
+                        .open(getContext());
                 break;
             case R.id.ll_jianshu:
-                WebActivity.start(getContext(), tv_name.getText().toString(), tv_jianshu.getText().toString());
+                UrlOpenUtils.Companion
+                        .with(tv_jianshu.getText().toString())
+                        .title(tv_name.getText().toString())
+                        .open(getContext());
                 break;
             case R.id.ll_qq:
                 presenter.openQQChat();
@@ -273,8 +280,9 @@ public class AboutMeActivity extends BaseActivity<AboutMePresenter> implements A
         ImageLoader.image(piv_qq_qrcode, data.getQq_qrcode());
         ImageLoader.image(piv_wx_qrcode, data.getWx_qrcode());
         GlideHelper.with(getContext())
+                .asBitmap()
                 .load(data.getIcon())
-                .get(new SimpleCallback<Bitmap>() {
+                .getBitmap(new SimpleCallback<Bitmap>() {
                     @Override
                     public void onResult(Bitmap bitmap) {
                         ImageLoader.userIcon(civ_icon, data.getIcon());

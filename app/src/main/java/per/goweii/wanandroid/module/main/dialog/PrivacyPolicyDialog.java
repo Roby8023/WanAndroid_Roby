@@ -1,7 +1,6 @@
 package per.goweii.wanandroid.module.main.dialog;
 
 import android.content.Context;
-import android.support.annotation.NonNull;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.SpannableStringBuilder;
@@ -11,12 +10,14 @@ import android.text.style.ClickableSpan;
 import android.view.View;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
+
 import per.goweii.anylayer.DialogLayer;
 import per.goweii.anylayer.Layer;
 import per.goweii.wanandroid.R;
 import per.goweii.wanandroid.common.WanApp;
-import per.goweii.wanandroid.module.main.activity.WebActivity;
 import per.goweii.wanandroid.utils.GuideSPUtils;
+import per.goweii.wanandroid.utils.UrlOpenUtils;
 
 /**
  * @author CuiZhen
@@ -79,7 +80,9 @@ public class PrivacyPolicyDialog extends DialogLayer {
         spannableString.setSpan(new Clickable(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                WebActivity.start(getActivity(), "file:///android_asset/privacy_policy.html");
+                UrlOpenUtils.Companion
+                        .with("file:///android_asset/privacy_policy.html")
+                        .open(getActivity());
             }
         }), start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
         content.setText(new SpannableStringBuilder().append(spannableString));

@@ -271,8 +271,9 @@ public class WebPresenter extends BasePresenter<WebView> {
             tv_user_name.setText(UserUtils.getInstance().getLoginBean().getUsername() +
                     "(" + UserUtils.getInstance().getLoginBean().getId() + ")");
             GlideHelper.with(getContext())
+                    .asBitmap()
                     .load(UserUtils.getInstance().getLoginBean().getIcon())
-                    .get(new SimpleCallback<Bitmap>() {
+                    .getBitmap(new SimpleCallback<Bitmap>() {
                         @Override
                         public void onResult(Bitmap data) {
                             civ_user_icon.setImageBitmap(data);

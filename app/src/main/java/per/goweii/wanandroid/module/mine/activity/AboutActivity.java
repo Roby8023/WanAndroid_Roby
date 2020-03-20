@@ -2,9 +2,10 @@ package per.goweii.wanandroid.module.mine.activity;
 
 import android.content.Context;
 import android.content.Intent;
-import android.support.annotation.Nullable;
 import android.view.View;
 import android.widget.TextView;
+
+import androidx.annotation.Nullable;
 
 import butterknife.BindView;
 import butterknife.OnClick;
@@ -12,7 +13,8 @@ import per.goweii.basic.core.base.BaseActivity;
 import per.goweii.basic.core.mvp.MvpPresenter;
 import per.goweii.basic.utils.AppInfoUtils;
 import per.goweii.wanandroid.R;
-import per.goweii.wanandroid.module.main.activity.WebActivity;
+import per.goweii.wanandroid.utils.UrlOpenUtils;
+import per.goweii.wanandroid.widget.LogoAnimView;
 
 /**
  * @author CuiZhen
@@ -29,8 +31,10 @@ public class AboutActivity extends BaseActivity {
     TextView tv_about;
     @BindView(R.id.tv_github)
     TextView tv_github;
+    @BindView(R.id.lav)
+    LogoAnimView lav;
 
-    public static void start(Context context){
+    public static void start(Context context) {
         Intent intent = new Intent(context, AboutActivity.class);
         context.startActivity(intent);
     }
@@ -56,6 +60,12 @@ public class AboutActivity extends BaseActivity {
     protected void loadData() {
     }
 
+    @Override
+    public void onWindowFocusChanged(boolean hasFocus) {
+        super.onWindowFocusChanged(hasFocus);
+        lav.randomBlink();
+    }
+
     @OnClick({
             R.id.ll_web, R.id.ll_about, R.id.ll_github
     })
@@ -70,13 +80,22 @@ public class AboutActivity extends BaseActivity {
             default:
                 break;
             case R.id.ll_web:
-                WebActivity.start(getContext(), tv_web.getText().toString(), "https://www.wanandroid.com");
+                UrlOpenUtils.Companion
+                        .with("https://www.wanandroid.com")
+                        .title(tv_web.getText().toString())
+                        .open(getContext());
                 break;
             case R.id.ll_about:
-                WebActivity.start(getContext(), tv_about.getText().toString(), "https://www.wanandroid.com/about");
+                UrlOpenUtils.Companion
+                        .with("https://www.wanandroid.com/about")
+                        .title(tv_about.getText().toString())
+                        .open(getContext());
                 break;
             case R.id.ll_github:
-                WebActivity.start(getContext(), tv_github.getText().toString(), "https://github.com/goweii/WanAndroid");
+                UrlOpenUtils.Companion
+                        .with("https://github.com/goweii/WanAndroid")
+                        .title(tv_github.getText().toString())
+                        .open(getContext());
                 break;
         }
     }

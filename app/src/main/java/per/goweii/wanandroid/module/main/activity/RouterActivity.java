@@ -5,13 +5,15 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
-import android.support.annotation.Nullable;
 import android.text.TextUtils;
+
+import androidx.annotation.Nullable;
 
 import per.goweii.basic.core.base.BaseActivity;
 import per.goweii.basic.core.mvp.MvpPresenter;
 import per.goweii.basic.utils.LogUtils;
 import per.goweii.wanandroid.common.WanApp;
+import per.goweii.wanandroid.utils.UrlOpenUtils;
 
 /**
  * @author CuiZhen
@@ -116,7 +118,9 @@ public class RouterActivity extends BaseActivity implements Runnable {
         if (!TextUtils.equals(scheme, "http") && !TextUtils.equals(scheme, "https")) {
             return;
         }
-        WebActivity.start(getContext(), data.toString());
+        UrlOpenUtils.Companion
+                .with(data.toString())
+                .open(getContext());
     }
 
     private void handleShareText(String sharedText) {

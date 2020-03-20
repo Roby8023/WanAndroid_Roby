@@ -1,20 +1,19 @@
 package per.goweii.wanandroid.module.home.fragment;
 
-import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.chad.library.adapter.base.BaseQuickAdapter;
 import com.chad.library.adapter.base.BaseViewHolder;
@@ -59,8 +58,7 @@ import per.goweii.wanandroid.module.home.activity.SearchActivity;
 import per.goweii.wanandroid.module.home.model.BannerBean;
 import per.goweii.wanandroid.module.home.presenter.HomePresenter;
 import per.goweii.wanandroid.module.home.view.HomeView;
-import per.goweii.wanandroid.module.main.activity.MainActivity;
-import per.goweii.wanandroid.module.main.activity.WebActivity;
+import per.goweii.wanandroid.module.main.activity.ScanActivity;
 import per.goweii.wanandroid.module.main.adapter.ArticleAdapter;
 import per.goweii.wanandroid.module.main.dialog.WebDialog;
 import per.goweii.wanandroid.module.main.model.ArticleBean;
@@ -71,6 +69,7 @@ import per.goweii.wanandroid.utils.RvAnimUtils;
 import per.goweii.wanandroid.utils.RvScrollTopUtils;
 import per.goweii.wanandroid.utils.SettingUtils;
 import per.goweii.wanandroid.utils.TM;
+import per.goweii.wanandroid.utils.UrlOpenUtils;
 import per.goweii.wanandroid.utils.ad.AdForBannerFactory;
 import per.goweii.wanandroid.widget.CollectView;
 
@@ -98,8 +97,6 @@ public class HomeFragment extends BaseFragment<HomePresenter> implements ScrollT
     private int currPage = PAGE_START;
     private SmartRefreshUtils mSmartRefreshUtils;
     private List<Object> mBannerDatas;
-    private List<View> mHeaderTopItemViews;
-    private List<ArticleBean> mHeaderTopItemBeans;
     private WebDialog mWebDialog;
 
     public static HomeFragment create() {
@@ -130,19 +127,6 @@ public class HomeFragment extends BaseFragment<HomePresenter> implements ScrollT
                 return false;
             }
         });
-        if (mHeaderTopItemViews != null && mHeaderTopItemViews.size() > 0) {
-            for (int i = 0; i < mHeaderTopItemViews.size(); i++) {
-                ArticleBean item = mHeaderTopItemBeans.get(i);
-                if (item.getId() == event.getArticleId()) {
-                    if (item.isCollect() != event.isCollect()) {
-                        item.setCollect(event.isCollect());
-                        View view = mHeaderTopItemViews.get(i);
-                        bindHeaderTopItem(view, item);
-                    }
-                    break;
-                }
-            }
-        }
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
@@ -152,11 +136,9 @@ public class HomeFragment extends BaseFragment<HomePresenter> implements ScrollT
         }
         if (event.isShowTopChanged()) {
             if (SettingUtils.getInstance().isShowTop()) {
-                if (mHeaderTopItemViews == null || mHeaderTopItemViews.size() == 0) {
-                    presenter.getTopArticleList(true);
-                }
+                presenter.getTopArticleList(true);
             } else {
-                removeHeaderTopItems();
+                removeTopItems();
             }
         }
         if (event.isShowBannerChanged()) {
@@ -183,17 +165,6 @@ public class HomeFragment extends BaseFragment<HomePresenter> implements ScrollT
             presenter.getArticleList(currPage, true);
         } else {
             mAdapter.notifyAllUnCollect();
-            if (mHeaderTopItemViews != null && mHeaderTopItemViews.size() > 0) {
-                for (int i = 0; i < mHeaderTopItemViews.size(); i++) {
-                    ArticleBean item = mHeaderTopItemBeans.get(i);
-                    if (item.isCollect()) {
-                        item.setCollect(false);
-                        View view = mHeaderTopItemViews.get(i);
-                        bindHeaderTopItem(view, item);
-                        break;
-                    }
-                }
-            }
         }
     }
 
@@ -241,8 +212,9 @@ public class HomeFragment extends BaseFragment<HomePresenter> implements ScrollT
                     }
                 }
                 GlideHelper.with(getContext())
+                        .asBitmap()
                         .load(event.getActionBarBgImageUrl())
-                        .get(new SimpleCallback<Bitmap>() {
+                        .getBitmap(new SimpleCallback<Bitmap>() {
                             @Override
                             public void onResult(Bitmap data) {
                                 abc.setBackground(new BitmapDrawable(data));
@@ -281,11 +253,7 @@ public class HomeFragment extends BaseFragment<HomePresenter> implements ScrollT
         abc.setOnLeftIconClickListener(new OnActionBarChildClickListener() {
             @Override
             public void onClick(View v) {
-                Activity activity = getActivity();
-                if (activity instanceof MainActivity) {
-                    MainActivity mainActivity = (MainActivity) activity;
-                    mainActivity.openUserArticle();
-                }
+                ScanActivity.start(v.getContext());
             }
         });
         mSmartRefreshUtils = SmartRefreshUtils.with(srl);
@@ -318,14 +286,14 @@ public class HomeFragment extends BaseFragment<HomePresenter> implements ScrollT
             public void onItemClick(BaseQuickAdapter adapter, View view, int position) {
                 ArticleBean item = mAdapter.getArticleBean(position);
                 if (item != null) {
-                    WebActivity.start(getContext(), item);
+                    UrlOpenUtils.Companion.with(item).open(getContext());
                 }
             }
         });
         mAdapter.setOnItemLongClickListener(new BaseQuickAdapter.OnItemLongClickListener() {
             @Override
             public boolean onItemLongClick(BaseQuickAdapter adapter, View view, int position) {
-                showWebDialog(false, position);
+                showWebDialog(position);
                 return true;
             }
         });
@@ -388,39 +356,21 @@ public class HomeFragment extends BaseFragment<HomePresenter> implements ScrollT
         super.onDestroyView();
     }
 
-    private void showWebDialog(boolean header, int position) {
-        int index = position;
-        if (!header) {
-            if (mHeaderTopItemBeans != null) {
-                index += mHeaderTopItemBeans.size();
-            }
-        }
-        mWebDialog = WebDialog.create(getContext(), mHeaderTopItemBeans, mAdapter.getData(), index);
+    private void showWebDialog(int position) {
+        mWebDialog = WebDialog.create(getContext(), null, mAdapter.getData(), position);
         mWebDialog.setOnPageChangedListener(new WebDialog.OnPageChangedListener() {
             @Override
             public void onPageChanged(int pos, ArticleBean data) {
                 int headerCount = mAdapter.getHeaderLayoutCount();
                 int currItemPos = 0;
-                boolean find = false;
-                if (mHeaderTopItemBeans != null) {
-                    for (int i = 0; i < mHeaderTopItemBeans.size(); i++) {
-                        ArticleBean bean = mHeaderTopItemBeans.get(i);
+                List<MultiItemEntity> datas = mAdapter.getData();
+                for (int i = 0; i < datas.size(); i++) {
+                    MultiItemEntity entity = datas.get(i);
+                    if (entity.getItemType() == ArticleAdapter.ITEM_TYPE_ARTICLE) {
+                        ArticleBean bean = (ArticleBean) entity;
                         if (bean.getId() == data.getId()) {
-                            find = true;
+                            currItemPos = headerCount + i;
                             break;
-                        }
-                    }
-                }
-                if (!find) {
-                    List<MultiItemEntity> datas = mAdapter.getData();
-                    for (int i = 0; i < datas.size(); i++) {
-                        MultiItemEntity entity = datas.get(i);
-                        if (entity.getItemType() == ArticleAdapter.ITEM_TYPE_ARTICLE) {
-                            ArticleBean bean = (ArticleBean) entity;
-                            if (bean.getId() == data.getId()) {
-                                currItemPos = headerCount + i;
-                                break;
-                            }
                         }
                     }
                 }
@@ -543,7 +493,10 @@ public class HomeFragment extends BaseFragment<HomePresenter> implements ScrollT
                     Object obj = mBannerDatas.get(position);
                     if (obj instanceof BannerBean) {
                         BannerBean bean = (BannerBean) obj;
-                        WebActivity.start(getContext(), bean.getTitle(), bean.getUrl());
+                        UrlOpenUtils.Companion
+                                .with(bean.getUrl())
+                                .title(bean.getTitle())
+                                .open(getContext());
                     }
                 }
             });
@@ -570,45 +523,34 @@ public class HomeFragment extends BaseFragment<HomePresenter> implements ScrollT
         });
     }
 
-    private void removeHeaderTopItems() {
-        if (mHeaderTopItemViews != null) {
-            for (View view : mHeaderTopItemViews) {
-                mAdapter.removeHeaderView(view);
-            }
-            mHeaderTopItemViews.clear();
-            mHeaderTopItemViews = null;
-        }
-        if (mHeaderTopItemBeans != null) {
-            mHeaderTopItemBeans.clear();
-            mHeaderTopItemBeans = null;
-        }
-    }
-
-    private void createHeaderTopItems(List<ArticleBean> data) {
-        removeHeaderTopItems();
-        mHeaderTopItemBeans = data;
-        if (mHeaderTopItemBeans == null || mHeaderTopItemBeans.isEmpty()) {
-            return;
-        }
-        LayoutInflater inflater = LayoutInflater.from(getContext());
-        mHeaderTopItemViews = new ArrayList<>();
-        for (int i = 0; i < mHeaderTopItemBeans.size(); i++) {
-            View view = inflater.inflate(R.layout.rv_item_article, rv, false);
-            mHeaderTopItemViews.add(view);
-        }
-        for (int i = 0; i < mHeaderTopItemViews.size(); i++) {
-            final int pos = i;
-            View view = mHeaderTopItemViews.get(i);
-            ArticleBean bean = mHeaderTopItemBeans.get(i);
-            bindHeaderTopItem(view, bean);
-            view.setOnLongClickListener(new View.OnLongClickListener() {
-                @Override
-                public boolean onLongClick(View v) {
-                    showWebDialog(true, pos);
-                    return true;
+    private void removeTopItems() {
+        List<MultiItemEntity> list = mAdapter.getData();
+        int from = -1;
+        int count = 0;
+        for (int i = 0; i < list.size(); i++) {
+            MultiItemEntity entity = list.get(i);
+            if (from < 0) {
+                if (entity.getItemType() == ArticleAdapter.ITEM_TYPE_ARTICLE) {
+                    ArticleBean bean = (ArticleBean) entity;
+                    if (bean.isTop()) {
+                        from = i;
+                    }
                 }
-            });
-            mAdapter.addHeaderView(view, mAdapter.getHeaderLayout().getChildCount());
+            }
+            if (from >= 0) {
+                if (entity.getItemType() == ArticleAdapter.ITEM_TYPE_ARTICLE) {
+                    ArticleBean bean = (ArticleBean) entity;
+                    if (!bean.isTop()) {
+                        break;
+                    }
+                }
+                count++;
+            }
+        }
+        if (from >= 0) {
+            for (int i = 0; i < count; i++) {
+                mAdapter.remove(from);
+            }
         }
     }
 
@@ -656,7 +598,18 @@ public class HomeFragment extends BaseFragment<HomePresenter> implements ScrollT
         currPage = data.getCurPage() + PAGE_START;
         if (data.getCurPage() == 1) {
             MultiStateUtils.toContent(msv);
-            mAdapter.setNewData(data.getDatas());
+            List<MultiItemEntity> newList = new ArrayList<>();
+            List<MultiItemEntity> oldList = mAdapter.getData();
+            for (MultiItemEntity entity : oldList) {
+                if (entity.getItemType() == ArticleAdapter.ITEM_TYPE_ARTICLE) {
+                    ArticleBean bean = (ArticleBean) entity;
+                    if (bean.isTop()) {
+                        newList.add(bean);
+                    }
+                }
+            }
+            newList.addAll(data.getDatas());
+            mAdapter.setNewData(newList);
         } else {
             mAdapter.addData(data.getDatas());
             if (mWebDialog != null) {
@@ -687,7 +640,17 @@ public class HomeFragment extends BaseFragment<HomePresenter> implements ScrollT
         for (ArticleBean bean : data) {
             bean.setTop(true);
         }
-        createHeaderTopItems(data);
+        List<MultiItemEntity> newList = new ArrayList<>(data);
+        List<MultiItemEntity> oldList = mAdapter.getData();
+        for (MultiItemEntity entity : oldList) {
+            if (entity.getItemType() == ArticleAdapter.ITEM_TYPE_ARTICLE) {
+                ArticleBean bean = (ArticleBean) entity;
+                if (!bean.isTop()) {
+                    newList.add(bean);
+                }
+            }
+        }
+        mAdapter.setNewData(newList);
     }
 
     @Override

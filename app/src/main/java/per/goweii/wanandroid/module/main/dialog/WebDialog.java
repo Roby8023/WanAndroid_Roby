@@ -4,11 +4,12 @@ import android.animation.Animator;
 import android.animation.AnimatorSet;
 import android.animation.ValueAnimator;
 import android.content.Context;
-import android.support.v4.view.ViewPager;
 import android.view.View;
 import android.view.animation.AccelerateInterpolator;
 import android.view.animation.DecelerateInterpolator;
 import android.widget.ImageView;
+
+import androidx.viewpager.widget.ViewPager;
 
 import com.chad.library.adapter.base.entity.MultiItemEntity;
 
@@ -24,7 +25,7 @@ import per.goweii.wanandroid.module.home.presenter.WebDialogPresenter;
 import per.goweii.wanandroid.module.home.view.WebDialogView;
 import per.goweii.wanandroid.module.main.adapter.WebDialogPagerAdapter;
 import per.goweii.wanandroid.module.main.model.ArticleBean;
-import per.goweii.wanandroid.utils.WebHolder;
+import per.goweii.wanandroid.utils.web.WebHolder;
 import per.goweii.wanandroid.widget.CollectView;
 
 /**

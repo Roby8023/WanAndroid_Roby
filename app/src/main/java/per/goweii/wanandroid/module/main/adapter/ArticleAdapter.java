@@ -1,15 +1,16 @@
 package per.goweii.wanandroid.module.main.adapter;
 
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.text.Html;
 import android.text.TextUtils;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.chad.library.adapter.base.BaseMultiItemQuickAdapter;
 import com.chad.library.adapter.base.BaseViewHolder;
@@ -24,9 +25,10 @@ import per.goweii.basic.utils.listener.OnClickListener2;
 import per.goweii.wanandroid.R;
 import per.goweii.wanandroid.event.CollectionEvent;
 import per.goweii.wanandroid.module.home.activity.UserPageActivity;
-import per.goweii.wanandroid.module.main.activity.WebActivity;
 import per.goweii.wanandroid.module.main.model.ArticleBean;
+import per.goweii.wanandroid.utils.ArticleDiffCallback;
 import per.goweii.wanandroid.utils.ImageLoader;
+import per.goweii.wanandroid.utils.UrlOpenUtils;
 import per.goweii.wanandroid.utils.ad.AdEntity;
 import per.goweii.wanandroid.utils.ad.AdForListFactory;
 import per.goweii.wanandroid.utils.ad.widget.AdContainer;
@@ -67,7 +69,12 @@ public class ArticleAdapter extends BaseMultiItemQuickAdapter<MultiItemEntity, B
         if (mPageLoadedCallback != null && data != null) {
             mPageLoadedCallback.pageLoaded(0, data);
         }
-        super.setNewData(data);
+        setNewDiffData(data);
+        getRecyclerView().scrollToPosition(0);
+    }
+
+    private void setNewDiffData(@Nullable List<MultiItemEntity> data) {
+        setNewDiffData(new ArticleDiffCallback(data));
     }
 
     @Override
@@ -329,7 +336,7 @@ public class ArticleAdapter extends BaseMultiItemQuickAdapter<MultiItemEntity, B
         view.setOnClickListener(new OnClickListener2() {
             @Override
             public void onClick2(View v) {
-                WebActivity.start(v.getContext(), item);
+                UrlOpenUtils.Companion.with(item).open(v.getContext());
             }
         });
     }

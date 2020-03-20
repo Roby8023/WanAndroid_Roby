@@ -9,10 +9,15 @@
     <!--    <uses-permission android:name="android.permission.READ_PHONE_STATE" />-->
     <!--    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />-->
     <!--    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />-->
+
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
+    <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission
         android:name="android.permission.READ_LOGS"
         tools:ignore="ProtectedPermissions" />
+
+    <!--  二维码扫码震动  -->
+    <uses-permission android:name="android.permission.VIBRATE" />
 
     <application
         android:name=".common.WanApp"
@@ -70,6 +75,9 @@
         <activity
             android:name=".module.main.activity.ShareArticleActivity"
             android:configChanges="keyboard|keyboardHidden|screenSize|fontScale|density|orientation" />
+        <activity
+            android:name=".module.main.activity.ScanActivity"
+            android:configChanges="keyboard|keyboardHidden|screenSize|fontScale|density|orientation" />
 
         <!--module.home-->
         <activity
@@ -106,7 +114,7 @@
             android:configChanges="keyboard|keyboardHidden|screenSize|fontScale|density|orientation" />
         <activity
             android:name=".module.mine.activity.SettingActivity"
-            android:configChanges="keyboard|keyboardHidden|screenSize|fontScale|density|orientation" />
+            android:configChanges="keyboard|keyboardHidden|screenSize|fontScale|density|orientation|uiMode" />
         <activity
             android:name=".module.mine.activity.AboutActivity"
             android:configChanges="keyboard|keyboardHidden|screenSize|fontScale|density|orientation" />
@@ -124,7 +132,7 @@
             android:configChanges="keyboard|keyboardHidden|screenSize|fontScale|density|orientation" />
 
         <provider
-            android:name="android.support.v4.content.FileProvider"
+            android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.fileprovider"
             android:exported="false"
             android:grantUriPermissions="true">

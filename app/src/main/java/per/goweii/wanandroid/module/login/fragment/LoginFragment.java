@@ -2,9 +2,10 @@ package per.goweii.wanandroid.module.login.fragment;
 
 import android.content.Context;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
 import android.view.View;
 import android.widget.LinearLayout;
+
+import androidx.annotation.Nullable;
 
 import butterknife.BindView;
 import butterknife.OnClick;
@@ -122,23 +123,6 @@ public class LoginFragment extends BaseFragment<LoginPresenter> implements Login
     public void loginSuccess(int code, LoginBean data) {
         new LoginEvent(true).post();
         finish();
-//        AccountInfo accountInfo = new AccountInfo();
-//        accountInfo.isv_refer_id = data.getId() + "";
-//        accountInfo.nickname = data.getUsername();
-//        CyanSdk.getInstance(getContext())
-//                .setAccountInfo(accountInfo, new CallBack() {
-//                    @Override
-//                    public void success() {
-//                        new LoginEvent(true).post();
-//                        finish();
-//                    }
-//
-//                    @Override
-//                    public void error(CyanException e) {
-//                        e.printStackTrace();
-//                        ToastMaker.showShort(e.error_msg);
-//                    }
-//                });
     }
 
     @Override
