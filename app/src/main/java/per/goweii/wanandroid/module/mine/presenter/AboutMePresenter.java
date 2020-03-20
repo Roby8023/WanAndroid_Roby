@@ -77,8 +77,9 @@ public class AboutMePresenter extends BasePresenter<AboutMeView> {
             return;
         }
         GlideHelper.with(getContext())
+                .asBitmap()
                 .load(mAboutMeBean.getQq_qrcode())
-                .get(new SimpleCallback<Bitmap>() {
+                .getBitmap(new SimpleCallback<Bitmap>() {
                     @Override
                     public void onResult(Bitmap data) {
                         if (null != BitmapUtils.saveGallery(data, mAboutMeBean.getName() + "_qq_qrcode_" + System.currentTimeMillis())) {
@@ -95,8 +96,9 @@ public class AboutMePresenter extends BasePresenter<AboutMeView> {
             return;
         }
         GlideHelper.with(getContext())
+                .asBitmap()
                 .load(mAboutMeBean.getWx_qrcode())
-                .get(new SimpleCallback<Bitmap>() {
+                .getBitmap(new SimpleCallback<Bitmap>() {
                     @Override
                     public void onResult(Bitmap data) {
                         if (null != BitmapUtils.saveGallery(data, mAboutMeBean.getName() + "_wx_qrcode_" + System.currentTimeMillis())) {

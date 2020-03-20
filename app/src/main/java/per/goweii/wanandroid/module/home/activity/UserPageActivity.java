@@ -3,20 +3,21 @@ package per.goweii.wanandroid.module.home.activity;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.design.widget.AppBarLayout;
-import android.support.design.widget.CollapsingToolbarLayout;
-import android.support.design.widget.CoordinatorLayout;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.coordinatorlayout.widget.CoordinatorLayout;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
 import com.chad.library.adapter.base.BaseQuickAdapter;
 import com.chad.library.adapter.base.BaseViewHolder;
+import com.google.android.material.appbar.AppBarLayout;
+import com.google.android.material.appbar.CollapsingToolbarLayout;
 import com.kennyc.view.MultiStateView;
 import com.scwang.smartrefresh.layout.SmartRefreshLayout;
 import com.scwang.smartrefresh.layout.api.RefreshFooter;
@@ -47,13 +48,13 @@ import per.goweii.wanandroid.event.LoginEvent;
 import per.goweii.wanandroid.event.SettingChangeEvent;
 import per.goweii.wanandroid.module.home.presenter.UserPagePresenter;
 import per.goweii.wanandroid.module.home.view.UserPageView;
-import per.goweii.wanandroid.module.main.activity.WebActivity;
 import per.goweii.wanandroid.module.main.adapter.ArticleAdapter;
 import per.goweii.wanandroid.module.main.model.ArticleBean;
 import per.goweii.wanandroid.module.main.model.UserPageBean;
 import per.goweii.wanandroid.utils.MultiStateUtils;
 import per.goweii.wanandroid.utils.RvAnimUtils;
 import per.goweii.wanandroid.utils.SettingUtils;
+import per.goweii.wanandroid.utils.UrlOpenUtils;
 import per.goweii.wanandroid.utils.router.Router;
 import per.goweii.wanandroid.widget.CollectView;
 
@@ -201,7 +202,7 @@ public class UserPageActivity extends BaseActivity<UserPagePresenter> implements
             public void onItemClick(BaseQuickAdapter adapter, View view, int position) {
                 ArticleBean item = mAdapter.getArticleBean(position);
                 if (item != null) {
-                    WebActivity.start(getContext(), item);
+                    UrlOpenUtils.Companion.with(item).open(getContext());
                 }
             }
         });
@@ -230,8 +231,10 @@ public class UserPageActivity extends BaseActivity<UserPagePresenter> implements
         srl.setOnMultiPurposeListener(new OnMultiPurposeListener() {
             @Override
             public void onHeaderMoving(RefreshHeader header, boolean isDragging, float percent, int offset, int headerHeight, int maxDragHeight) {
-                iv_blur.getLayoutParams().height = rl_user_info.getMeasuredHeight() + offset;
-                iv_blur.requestLayout();
+                if (iv_blur != null && rl_user_info != null) {
+                    iv_blur.getLayoutParams().height = rl_user_info.getMeasuredHeight() + offset;
+                    iv_blur.requestLayout();
+                }
             }
 
             @Override
@@ -248,8 +251,10 @@ public class UserPageActivity extends BaseActivity<UserPagePresenter> implements
 
             @Override
             public void onFooterMoving(RefreshFooter footer, boolean isDragging, float percent, int offset, int footerHeight, int maxDragHeight) {
-                iv_blur.getLayoutParams().height = rl_user_info.getMeasuredHeight() - offset;
-                iv_blur.requestLayout();
+                if (iv_blur != null && rl_user_info != null) {
+                    iv_blur.getLayoutParams().height = rl_user_info.getMeasuredHeight() - offset;
+                    iv_blur.requestLayout();
+                }
             }
 
             @Override

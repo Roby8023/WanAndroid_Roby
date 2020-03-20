@@ -10,7 +10,7 @@
     <per.goweii.actionbarex.common.ActionBarCommon
         android:id="@+id/abc"
         style="@style/ActionBar.Common"
-        app:abc_leftIconRes="@drawable/ic_article"
+        app:abc_leftIconRes="@drawable/ic_scan"
         app:abc_rightIconRes="@drawable/ic_search"
         app:abc_titleText="首页" />
 
@@ -23,7 +23,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
-            <android.support.v7.widget.RecyclerView
+            <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/rv"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"

@@ -1,6 +1,6 @@
 package per.goweii.wanandroid.utils;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -10,6 +10,7 @@ import java.util.List;
 
 import per.goweii.basic.utils.SPUtils;
 import per.goweii.wanandroid.module.mine.model.HostEntity;
+import per.goweii.wanandroid.utils.web.HostInterceptUtils;
 
 /**
  * @author CuiZhen

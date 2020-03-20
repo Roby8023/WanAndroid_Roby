@@ -1,18 +1,13 @@
 package per.goweii.wanandroid.common
 
 import android.app.Application
-import android.graphics.Color
 import cat.ereza.customactivityoncrash.config.CaocConfig
-import com.sohu.cyan.android.sdk.api.Config
-import com.sohu.cyan.android.sdk.api.CyanSdk
-import com.sohu.cyan.android.sdk.exception.CyanException
 import com.tencent.bugly.crashreport.CrashReport
 import com.tencent.bugly.crashreport.CrashReport.CrashHandleCallback
 import com.tencent.bugly.crashreport.CrashReport.UserStrategy
 import com.tencent.smtt.sdk.QbSdk
 import com.tencent.smtt.sdk.QbSdk.PreInitCallback
 import com.tencent.smtt.sdk.WebView
-import io.realm.Realm
 import per.goweii.basic.core.CoreInit
 import per.goweii.basic.utils.AsyncInitTask
 import per.goweii.basic.utils.DebugUtils
@@ -24,7 +19,6 @@ import per.goweii.rxhttp.core.RxHttp
 import per.goweii.wanandroid.BuildConfig
 import per.goweii.wanandroid.http.RxHttpRequestSetting
 import per.goweii.wanandroid.http.WanCache
-import per.goweii.wanandroid.module.login.activity.LoginActivity
 import per.goweii.wanandroid.module.main.activity.CrashActivity
 import per.goweii.wanandroid.module.main.activity.MainActivity
 import per.goweii.wanandroid.utils.UserUtils
@@ -94,20 +88,6 @@ class BlurredInitTask : AsyncInitTask() {
     }
 }
 
-class RealmInitTask : AsyncInitTask() {
-    override fun init(application: Application) {
-        Realm.init(application)
-    }
-
-    override fun onlyMainProcess(): Boolean {
-        return true
-    }
-
-    override fun level(): Int {
-        return 2
-    }
-}
-
 class CrashInitTask : SyncInitTask() {
     override fun init(application: Application) {
         CaocConfig.Builder.create()
@@ -129,39 +109,6 @@ class CrashInitTask : SyncInitTask() {
 
     override fun level(): Int {
         return 0
-    }
-}
-
-class CyanInitTask : AsyncInitTask() {
-    override fun init(application: Application) {
-        val config = Config()
-        config.ui.toolbar_bg = Color.WHITE
-        config.ui.style = "indent"
-        config.ui.depth = 1
-        config.ui.sub_size = 20
-        config.comment.showScore = false
-        config.comment.uploadFiles = true
-        config.comment.useFace = false
-        config.login.SSO_Assets_ICon = "ico31.png"
-        config.login.SSOLogin = true
-        config.login.loginActivityClass = LoginActivity::class.java
-        try {
-            CyanSdk.register(application,
-                    BuildConfig.CHANGYAN_APP_ID,
-                    BuildConfig.CHANGYAN_APP_KEY,
-                    null,
-                    config)
-        } catch (e: CyanException) {
-            e.printStackTrace()
-        }
-    }
-
-    override fun onlyMainProcess(): Boolean {
-        return false
-    }
-
-    override fun level(): Int {
-        return 5
     }
 }
 

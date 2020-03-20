@@ -1,12 +1,13 @@
 package per.goweii.wanandroid.module.mine.fragment;
 
-import android.support.annotation.Nullable;
-import android.support.v4.view.ViewPager;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.view.View;
 import android.view.ViewParent;
+
+import androidx.annotation.Nullable;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.viewpager.widget.ViewPager;
 
 import com.chad.library.adapter.base.BaseQuickAdapter;
 import com.kennyc.view.MultiStateView;
@@ -31,7 +32,6 @@ import per.goweii.wanandroid.R;
 import per.goweii.wanandroid.common.ScrollTop;
 import per.goweii.wanandroid.event.CollectionEvent;
 import per.goweii.wanandroid.event.SettingChangeEvent;
-import per.goweii.wanandroid.module.main.activity.WebActivity;
 import per.goweii.wanandroid.module.main.model.CollectionLinkBean;
 import per.goweii.wanandroid.module.mine.adapter.CollectionLinkAdapter;
 import per.goweii.wanandroid.module.mine.dialog.EditCollectLinkDialog;
@@ -41,6 +41,7 @@ import per.goweii.wanandroid.utils.MultiStateUtils;
 import per.goweii.wanandroid.utils.RvAnimUtils;
 import per.goweii.wanandroid.utils.RvScrollTopUtils;
 import per.goweii.wanandroid.utils.SettingUtils;
+import per.goweii.wanandroid.utils.UrlOpenUtils;
 
 /**
  * @author CuiZhen
@@ -135,7 +136,11 @@ public class CollectionLinkFragment extends BaseFragment<CollectionLinkPresenter
                     default:
                         break;
                     case R.id.rl_top:
-                        WebActivity.start(getContext(), item.getName(), item.getLink(), true);
+                        UrlOpenUtils.Companion
+                                .with(item.getLink())
+                                .title(item.getName())
+                                .collected(true)
+                                .open(getContext());
                         break;
                     case R.id.tv_copy:
                         CopyUtils.copyText(item.getLink());

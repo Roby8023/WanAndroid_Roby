@@ -2,13 +2,15 @@ package per.goweii.wanandroid.module.main.activity;
 
 import android.content.Context;
 import android.content.Intent;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
+import android.net.Uri;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import butterknife.BindView;
 import butterknife.OnClick;
@@ -23,8 +25,9 @@ import per.goweii.rxhttp.request.base.BaseBean;
 import per.goweii.wanandroid.R;
 import per.goweii.wanandroid.module.main.presenter.ShareArticlePresenter;
 import per.goweii.wanandroid.module.main.view.ShareArticleView;
+import per.goweii.wanandroid.utils.UrlOpenUtils;
 import per.goweii.wanandroid.utils.UserUtils;
-import per.goweii.wanandroid.utils.WebHolder;
+import per.goweii.wanandroid.utils.web.WebHolder;
 import per.goweii.wanandroid.widget.WebContainer;
 
 /**
@@ -97,10 +100,19 @@ public class ShareArticleActivity extends BaseActivity<ShareArticlePresenter> im
                 presenter.shareArticle(title, link);
             }
         });
+        String link = getIntent().getStringExtra("link");
+        if (!TextUtils.isEmpty(link)) {
+            et_link.setText(link);
+        }
+        String title = getIntent().getStringExtra("title");
+        if (TextUtils.isEmpty(title)) {
+            refreshTitle(link);
+        } else {
+            resetTitle(title);
+        }
         et_link.addTextChangedListener(new SimpleTextWatcher() {
             @Override
             public void afterTextChanged(Editable s) {
-                LogUtils.i(TAG, "afterTextChanged=" + s.toString());
                 refreshTitle(s.toString());
             }
         });
@@ -108,12 +120,6 @@ public class ShareArticleActivity extends BaseActivity<ShareArticlePresenter> im
 
     @Override
     protected void loadData() {
-        String title = getIntent().getStringExtra("title");
-        String link = getIntent().getStringExtra("link");
-        resetTitle(title);
-        if (!TextUtils.isEmpty(link)) {
-            et_link.setText(link);
-        }
     }
 
     @Override
@@ -140,9 +146,21 @@ public class ShareArticleActivity extends BaseActivity<ShareArticlePresenter> im
         }
     }
 
+    private boolean isCorrectUrl(String url) {
+        if (TextUtils.isEmpty(url)) return false;
+        Uri uri = Uri.parse(url);
+        if (uri == null) return false;
+        String scheme = uri.getScheme();
+        if (!TextUtils.equals(scheme, "https") && !TextUtils.equals(scheme, "http")) return false;
+        return !TextUtils.isEmpty(uri.getHost());
+    }
+
     private void refreshTitle(String url) {
         LogUtils.i(TAG, "refreshTitle=" + url);
-        if (TextUtils.isEmpty(url)) {
+        if (mWebHolder != null) {
+            mWebHolder.stopLoading();
+        }
+        if (!isCorrectUrl(url)) {
             resetTitle("");
             return;
         }
@@ -156,7 +174,6 @@ public class ShareArticleActivity extends BaseActivity<ShareArticlePresenter> im
                     })
                     .loadUrl(url);
         } else {
-            mWebHolder.stopLoading();
             mWebHolder.loadUrl(url);
         }
     }
@@ -187,7 +204,10 @@ public class ShareArticleActivity extends BaseActivity<ShareArticlePresenter> im
                 refreshTitle(et_link.getText().toString());
                 break;
             case R.id.tv_open:
-                WebActivity.start(getContext(), et_link.getText().toString());
+                UrlOpenUtils.Companion
+                        .with(et_link.getText().toString())
+                        .title(et_title.getText().toString())
+                        .open(getContext());
                 break;
         }
     }

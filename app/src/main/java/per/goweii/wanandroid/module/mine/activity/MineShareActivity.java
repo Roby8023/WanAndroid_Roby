@@ -2,10 +2,11 @@ package per.goweii.wanandroid.module.mine.activity;
 
 import android.content.Context;
 import android.content.Intent;
-import android.support.annotation.Nullable;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.view.View;
+
+import androidx.annotation.Nullable;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.chad.library.adapter.base.BaseQuickAdapter;
 import com.kennyc.view.MultiStateView;
@@ -206,7 +207,7 @@ public class MineShareActivity extends BaseActivity<MineSharePresenter> implemen
     protected void loadData() {
         MultiStateUtils.toLoading(msv);
         currPage = PAGE_START;
-        presenter.getMineShareArticleList(currPage, true);
+        presenter.getMineShareArticleList(currPage, false);
     }
 
     @Override

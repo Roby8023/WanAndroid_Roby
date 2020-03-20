@@ -3,12 +3,13 @@ package per.goweii.wanandroid.module.mine.activity;
 import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
-import android.support.annotation.Nullable;
-import android.support.v7.widget.SwitchCompat;
 import android.view.View;
 import android.widget.CompoundButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+
+import androidx.annotation.Nullable;
+import androidx.appcompat.widget.SwitchCompat;
 
 import butterknife.BindView;
 import butterknife.OnClick;
@@ -29,16 +30,16 @@ import per.goweii.wanandroid.R;
 import per.goweii.wanandroid.common.WanApp;
 import per.goweii.wanandroid.event.LoginEvent;
 import per.goweii.wanandroid.event.SettingChangeEvent;
-import per.goweii.wanandroid.module.main.activity.WebActivity;
 import per.goweii.wanandroid.module.main.dialog.DownloadDialog;
 import per.goweii.wanandroid.module.main.model.UpdateBean;
 import per.goweii.wanandroid.module.mine.presenter.SettingPresenter;
 import per.goweii.wanandroid.module.mine.view.SettingView;
-import per.goweii.wanandroid.utils.HostInterceptUtils;
 import per.goweii.wanandroid.utils.RvAnimUtils;
 import per.goweii.wanandroid.utils.SettingUtils;
 import per.goweii.wanandroid.utils.UpdateUtils;
+import per.goweii.wanandroid.utils.UrlOpenUtils;
 import per.goweii.wanandroid.utils.UserUtils;
+import per.goweii.wanandroid.utils.web.HostInterceptUtils;
 
 /**
  * @author CuiZhen
@@ -335,7 +336,9 @@ public class SettingActivity extends BaseActivity<SettingPresenter> implements S
                 AboutActivity.start(getContext());
                 break;
             case R.id.ll_privacy_policy:
-                WebActivity.start(getContext(), "file:///android_asset/privacy_policy.html");
+                UrlOpenUtils.Companion
+                        .with("file:///android_asset/privacy_policy.html")
+                        .open(getContext());
                 break;
             case R.id.ll_logout:
                 TipDialog.with(getContext())
