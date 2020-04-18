@@ -1,10 +1,20 @@
+------
+
+**APP功能已基本完善且趋于稳定，无重大BUG和需求将持续暂停更新~**
+
+------
+
+
+
 # WanAndroid
 
 [WanAndroid](https://www.wanandroid.com/)|最美玩安卓客户端
 
 - [Wanandroid主页](https://www.wanandroid.com/blog/show/2577)
 - [GitHub主页](https://github.com/goweii/WanAndroid)
-- [酷安主页](https://www.coolapk.com/apk/231591)
+- [酷安主页](https://www.coolapk.com/apk/231591) 
+
+![install](https://img.shields.io/badge/Install-2617-green)
 
 
 
@@ -19,19 +29,16 @@
 # 功能及特色
 
 1. [玩Android开放API](https://www.wanandroid.com/blog/show/2)中除TODO的所有功能
-2. 简洁美观的UI设计
-3. 暗黑模式
-4. 滑动返回
-5. 稍后阅读
+2. 简洁美观的UI设计，高品质暗黑模式
+4. 全局滑动返回
+5. 稍后阅读/阅读历史
 6. 恶意网址拦截
 7. 版本更新
 8. 离线缓存
 9. 更换头像和个人中心背景
-10. 等级积分和排名显示
-11. 首页文章概览
+10. 等级/积分/排名
 12. 用户主页
-13. 广场
-14. 文章分享（支持一键分享）
+14. 广场/文章分享（支持由第三方APP一键分享）
 
 
 
@@ -83,6 +90,21 @@
 
 
 # 更新日志
+
+## 1.5.0(42)
+
+- 【停更】APP功能已基本完善且趋于稳定，无重大BUG和需求将持续停更
+- 【新增】主页Tab改版，新增问答删除公众号和项目
+- 【新增】列表分类标签支持跳转
+- 【优化】网页大图查看增加加载进度
+- 【修复】一些已知BUG
+
+## 1.4.6(41)
+
+- 【停更】APP功能已基本完善且趋于稳定，无重大BUG和需求将持续停更
+- 【新增】新增稍后阅读
+- 【新增】新增阅读历史
+- 【修复】一些已知BUG
 
 ## 1.4.5(40)
 

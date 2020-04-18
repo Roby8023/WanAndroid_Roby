@@ -16,20 +16,26 @@ import com.scwang.smartrefresh.layout.SmartRefreshLayout;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import butterknife.BindView;
+import per.goweii.actionbarex.common.ActionBarCommon;
+import per.goweii.actionbarex.common.OnActionBarChildClickListener;
 import per.goweii.basic.core.base.BaseActivity;
-import per.goweii.basic.core.mvp.MvpPresenter;
 import per.goweii.basic.core.utils.SmartRefreshUtils;
+import per.goweii.basic.ui.dialog.TipDialog;
 import per.goweii.basic.ui.toast.ToastMaker;
 import per.goweii.basic.utils.CopyUtils;
 import per.goweii.basic.utils.IntentUtils;
+import per.goweii.basic.utils.listener.SimpleCallback;
+import per.goweii.basic.utils.listener.SimpleListener;
 import per.goweii.wanandroid.R;
+import per.goweii.wanandroid.db.model.ReadLaterModel;
+import per.goweii.wanandroid.event.ReadLaterEvent;
 import per.goweii.wanandroid.event.SettingChangeEvent;
 import per.goweii.wanandroid.module.mine.adapter.ReadLaterAdapter;
-import per.goweii.wanandroid.module.mine.model.ReadLaterEntity;
+import per.goweii.wanandroid.module.mine.presenter.ReadLaterPresenter;
+import per.goweii.wanandroid.module.mine.view.ReadLaterView;
 import per.goweii.wanandroid.utils.MultiStateUtils;
 import per.goweii.wanandroid.utils.RvAnimUtils;
 import per.goweii.wanandroid.utils.SettingUtils;
@@ -40,8 +46,10 @@ import per.goweii.wanandroid.utils.UrlOpenUtils;
  * @date 2019/5/17
  * GitHub: https://github.com/goweii
  */
-public class ReadLaterActivity extends BaseActivity {
+public class ReadLaterActivity extends BaseActivity<ReadLaterPresenter> implements ReadLaterView {
 
+    @BindView(R.id.abc)
+    ActionBarCommon abc;
     @BindView(R.id.msv)
     MultiStateView msv;
     @BindView(R.id.srl)
@@ -52,8 +60,8 @@ public class ReadLaterActivity extends BaseActivity {
     private SmartRefreshUtils mSmartRefreshUtils;
     private ReadLaterAdapter mAdapter;
 
+    private int offset = 0;
     private int perPageCount = 20;
-    private int currPage = 0;
 
     public static void start(Context context) {
         Intent intent = new Intent(context, ReadLaterActivity.class);
@@ -70,6 +78,15 @@ public class ReadLaterActivity extends BaseActivity {
         }
     }
 
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onReadLaterEvent(ReadLaterEvent event) {
+        if (isDestroyed()) {
+            return;
+        }
+        offset = 0;
+        presenter.getList(0, perPageCount);
+    }
+
     @Override
     protected boolean isRegisterEventBus() {
         return true;
@@ -82,18 +99,32 @@ public class ReadLaterActivity extends BaseActivity {
 
     @Nullable
     @Override
-    protected MvpPresenter initPresenter() {
-        return null;
+    protected ReadLaterPresenter initPresenter() {
+        return new ReadLaterPresenter();
     }
 
     @Override
     protected void initView() {
+        abc.setOnRightTextClickListener(new OnActionBarChildClickListener() {
+            @Override
+            public void onClick(View v) {
+                TipDialog.with(getContext())
+                        .message("确定要全部删除吗？")
+                        .onYes(new SimpleCallback<Void>() {
+                            @Override
+                            public void onResult(Void data) {
+                                presenter.removeAll();
+                            }
+                        })
+                        .show();
+            }
+        });
         mSmartRefreshUtils = SmartRefreshUtils.with(srl);
         mSmartRefreshUtils.pureScrollMode();
         mSmartRefreshUtils.setRefreshListener(new SmartRefreshUtils.RefreshListener() {
             @Override
             public void onRefresh() {
-                currPage = 0;
+                offset = 0;
                 getPageList();
             }
         });
@@ -104,7 +135,6 @@ public class ReadLaterActivity extends BaseActivity {
         mAdapter.setOnLoadMoreListener(new BaseQuickAdapter.RequestLoadMoreListener() {
             @Override
             public void onLoadMoreRequested() {
-                currPage++;
                 getPageList();
             }
         }, rv);
@@ -112,7 +142,7 @@ public class ReadLaterActivity extends BaseActivity {
             @Override
             public void onItemChildClick(BaseQuickAdapter adapter, View view, int position) {
                 mAdapter.closeAll(null);
-                ReadLaterEntity item = mAdapter.getItem(position);
+                ReadLaterModel item = mAdapter.getItem(position);
                 if (item == null) {
                     return;
                 }
@@ -139,25 +169,30 @@ public class ReadLaterActivity extends BaseActivity {
                         }
                         break;
                     case R.id.tv_delete:
-                        mAdapter.remove(position);
-                        if (mAdapter.getData().isEmpty()) {
-                            MultiStateUtils.toEmpty(msv);
-                        } else {
-                            MultiStateUtils.toContent(msv);
+                        ReadLaterModel model = mAdapter.getItem(position);
+                        if (model != null) {
+                            presenter.remove(model.getLink());
                         }
                         break;
                 }
             }
         });
         rv.setAdapter(mAdapter);
+        MultiStateUtils.setEmptyAndErrorClick(msv, new SimpleListener() {
+            @Override
+            public void onResult() {
+                MultiStateUtils.toLoading(msv);
+                offset = 0;
+                getPageList();
+            }
+        });
     }
 
     @Override
     protected void loadData() {
         MultiStateUtils.toLoading(msv);
-        currPage = 0;
+        offset = 0;
         getPageList();
-        MultiStateUtils.toError(msv, null, "该功能已删除~");
     }
 
     @Override
@@ -166,20 +201,69 @@ public class ReadLaterActivity extends BaseActivity {
     }
 
     public void getPageList() {
-        List<ReadLaterEntity> list = new ArrayList<>();
-        if (currPage == 0) {
+        presenter.getList(offset, perPageCount);
+    }
+
+    @Override
+    public void getReadLaterListSuccess(List<ReadLaterModel> list) {
+        mSmartRefreshUtils.success();
+        if (offset == 0) {
             mAdapter.setNewData(list);
             if (list.isEmpty()) {
-                MultiStateUtils.toEmpty(msv);
+                MultiStateUtils.toEmpty(msv, true);
             } else {
                 MultiStateUtils.toContent(msv);
             }
         } else {
             mAdapter.addData(list);
+            mAdapter.loadMoreComplete();
         }
+        offset = mAdapter.getData().size();
         if (list.size() < perPageCount) {
             mAdapter.loadMoreEnd();
         }
-        mSmartRefreshUtils.success();
+    }
+
+    @Override
+    public void getReadLaterListFailed() {
+        mSmartRefreshUtils.fail();
+        if (offset == 0) {
+            MultiStateUtils.toError(msv);
+        } else {
+            mAdapter.loadMoreFail();
+        }
+    }
+
+    @Override
+    public void removeReadLaterSuccess(String link) {
+        List<ReadLaterModel> list = mAdapter.getData();
+        for (int i = 0; i < list.size(); i++) {
+            ReadLaterModel model = list.get(i);
+            if (TextUtils.equals(model.getLink(), link)) {
+                mAdapter.remove(i);
+                break;
+            }
+        }
+        offset = mAdapter.getData().size();
+        if (mAdapter.getData().isEmpty()) {
+            MultiStateUtils.toEmpty(msv, true);
+        }
+    }
+
+    @Override
+    public void removeReadLaterFailed() {
+        ToastMaker.showShort("删除失败");
+    }
+
+    @Override
+    public void removeAllReadLaterSuccess() {
+        mAdapter.setNewData(null);
+        offset = mAdapter.getData().size();
+        MultiStateUtils.toEmpty(msv, true);
+    }
+
+    @Override
+    public void removeAllReadLaterFailed() {
+        ToastMaker.showShort("删除失败");
     }
 }

@@ -68,7 +68,6 @@ import per.goweii.wanandroid.utils.MultiStateUtils;
 import per.goweii.wanandroid.utils.RvAnimUtils;
 import per.goweii.wanandroid.utils.RvScrollTopUtils;
 import per.goweii.wanandroid.utils.SettingUtils;
-import per.goweii.wanandroid.utils.TM;
 import per.goweii.wanandroid.utils.UrlOpenUtils;
 import per.goweii.wanandroid.utils.ad.AdForBannerFactory;
 import per.goweii.wanandroid.widget.CollectView;
@@ -243,7 +242,6 @@ public class HomeFragment extends BaseFragment<HomePresenter> implements ScrollT
 
     @Override
     protected void initView() {
-        TM.APP_STARTUP.record("HomeFragment initView");
         abc.setOnRightIconClickListener(new OnActionBarChildClickListener() {
             @Override
             public void onClick(View v) {
@@ -281,15 +279,6 @@ public class HomeFragment extends BaseFragment<HomePresenter> implements ScrollT
                 presenter.getArticleList(currPage, false);
             }
         }, rv);
-        mAdapter.setOnItemClickListener(new BaseQuickAdapter.OnItemClickListener() {
-            @Override
-            public void onItemClick(BaseQuickAdapter adapter, View view, int position) {
-                ArticleBean item = mAdapter.getArticleBean(position);
-                if (item != null) {
-                    UrlOpenUtils.Companion.with(item).open(getContext());
-                }
-            }
-        });
         mAdapter.setOnItemLongClickListener(new BaseQuickAdapter.OnItemLongClickListener() {
             @Override
             public boolean onItemLongClick(BaseQuickAdapter adapter, View view, int position) {
@@ -302,7 +291,7 @@ public class HomeFragment extends BaseFragment<HomePresenter> implements ScrollT
             public void onCollectClick(BaseViewHolder helper, CollectView v, int position) {
                 ArticleBean item = mAdapter.getArticleBean(position);
                 if (item != null) {
-                    if (!v.isChecked()) {
+                    if (v.isChecked()) {
                         presenter.collect(item, v);
                     } else {
                         presenter.uncollect(item, v);
@@ -412,7 +401,6 @@ public class HomeFragment extends BaseFragment<HomePresenter> implements ScrollT
     @Override
     public void onVisible(boolean isFirstVisible) {
         super.onVisible(isFirstVisible);
-        TM.APP_STARTUP.record("HomeFragment onVisible");
     }
 
     @Override
@@ -464,7 +452,6 @@ public class HomeFragment extends BaseFragment<HomePresenter> implements ScrollT
                         ViewExtKt.onPreDraw(imageView, new Function1<View, Unit>() {
                             @Override
                             public Unit invoke(View view) {
-                                TM.APP_STARTUP.end("HomeFragment Banner onPreDraw");
                                 return null;
                             }
                         });
@@ -507,20 +494,6 @@ public class HomeFragment extends BaseFragment<HomePresenter> implements ScrollT
         } else {
             mBanner.setVisibility(View.GONE);
         }
-    }
-
-    private void bindHeaderTopItem(View view, ArticleBean item) {
-        ArticleAdapter.bindArticle(view, item, new ArticleAdapter.OnCollectListener() {
-            @Override
-            public void collect(ArticleBean item, CollectView v) {
-                presenter.collect(item, v);
-            }
-
-            @Override
-            public void uncollect(ArticleBean item, CollectView v) {
-                presenter.uncollect(item, v);
-            }
-        });
     }
 
     private void removeTopItems() {

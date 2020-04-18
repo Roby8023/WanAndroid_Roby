@@ -1,6 +1,8 @@
 package per.goweii.wanandroid.module.mine.adapter;
 
+import android.annotation.SuppressLint;
 import android.text.Html;
+import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -15,22 +17,23 @@ import java.util.Date;
 import java.util.List;
 
 import per.goweii.wanandroid.R;
-import per.goweii.wanandroid.module.mine.model.ReadLaterEntity;
+import per.goweii.wanandroid.db.model.ReadLaterModel;
 
 /**
  * @author CuiZhen
  * @date 2019/5/15
  * GitHub: https://github.com/goweii
  */
-public class ReadLaterAdapter extends BaseQuickAdapter<ReadLaterEntity, BaseViewHolder> {
+public class ReadLaterAdapter extends BaseQuickAdapter<ReadLaterModel, BaseViewHolder> {
 
     private final SimpleDateFormat mSimpleDateFormat;
 
     private final List<SwipeLayout> mUnCloseList = new ArrayList<>();
 
+    @SuppressLint("SimpleDateFormat")
     public ReadLaterAdapter() {
-        super(R.layout.rv_item_readlater);
-        mSimpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        super(R.layout.rv_item_read_later);
+        mSimpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     }
 
     public void closeAll(SwipeLayout layout) {
@@ -65,7 +68,7 @@ public class ReadLaterAdapter extends BaseQuickAdapter<ReadLaterEntity, BaseView
     }
 
     @Override
-    protected void convert(BaseViewHolder helper, ReadLaterEntity item) {
+    protected void convert(BaseViewHolder helper, ReadLaterModel item) {
         SwipeLayout sl = helper.getView(R.id.sl);
         sl.addSwipeListener(new SwipeLayout.SwipeListener() {
             @Override
@@ -95,6 +98,11 @@ public class ReadLaterAdapter extends BaseQuickAdapter<ReadLaterEntity, BaseView
             public void onHandRelease(SwipeLayout layout, float xvel, float yvel) {
             }
         });
+        if (TextUtils.isEmpty(item.getTitle())) {
+            helper.setText(R.id.tv_title, item.getLink());
+        } else {
+            helper.setText(R.id.tv_title, Html.fromHtml(item.getTitle()));
+        }
         helper.setText(R.id.tv_title, Html.fromHtml(item.getTitle()));
         String time = mSimpleDateFormat.format(new Date(item.getTime()));
         helper.setText(R.id.tv_time, time);

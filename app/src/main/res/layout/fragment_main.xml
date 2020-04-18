@@ -5,6 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
+    tools:background="@color/background"
     tools:context=".module.main.activity.MainActivity">
 
     <androidx.viewpager.widget.ViewPager
@@ -105,7 +106,8 @@
             android:gravity="center"
             android:orientation="vertical"
             android:paddingTop="3dp"
-            android:paddingBottom="3dp">
+            android:paddingBottom="3dp"
+            android:visibility="gone">
 
             <per.goweii.percentimageview.percentimageview.PercentImageView
                 android:id="@+id/iv_bb_wechat"
@@ -138,7 +140,8 @@
             android:gravity="center"
             android:orientation="vertical"
             android:paddingTop="3dp"
-            android:paddingBottom="3dp">
+            android:paddingBottom="3dp"
+            android:visibility="gone">
 
             <per.goweii.percentimageview.percentimageview.PercentImageView
                 android:id="@+id/iv_bb_project"
